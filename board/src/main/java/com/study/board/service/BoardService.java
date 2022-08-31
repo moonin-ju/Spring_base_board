@@ -1,9 +1,14 @@
 package com.study.board.service;
 
+import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.study.board.entity.Board;
 import com.study.board.repository.BoardRepository;
@@ -15,13 +20,27 @@ public class BoardService {
 	private BoardRepository boardRepository;
 	
 	//글 작성
-	public void write(Board board) {
+	public void write(Board board, MultipartFile file) throws Exception{
+		
+		String projectPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\files_test";
+
+		UUID uuid = UUID.randomUUID();
+		
+		String fileName = uuid + "_" + file.getOriginalFilename();
+		
+		File saveFile = new File(projectPath, fileName);
+		
+		file.transferTo(saveFile);
+
+		board.setFilename(fileName);
+		board.setFilepath("/files" + fileName);
+		
 		boardRepository.save(board);
 	}
 	//글 목록 처리
-	public List<Board> boardList(){
+	public Page<Board> boardList(Pageable pageable){
 		
-		return boardRepository.findAll();
+		return boardRepository.findAll(pageable);
 	}
 	//특정 게시글 불러오기
 	public Board boardview(Integer id) {
